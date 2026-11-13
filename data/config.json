@@ -1,0 +1,207 @@
+{
+  "settings": {
+    "bot_enabled": true,
+    "my_tag_names": [
+      "@TênCủaBạn",
+      "@Minh"
+    ],
+    "group_require_tag": true,
+    "private_require_tag": false,
+    "delay_min_sec": 2.0,
+    "delay_max_sec": 5.5,
+    "cooldown_sec": 15,
+    "auto_open_unread": true,
+    "typing_simulation": true
+  },
+  "target_controls": [
+    {
+      "id": "tc-1",
+      "name": "Nhóm Dự Án Công Ty",
+      "chat_type": "group",
+      "enabled": true,
+      "note": "Nhóm công việc chính - chỉ trả lời khi được tag @"
+    },
+    {
+      "id": "tc-2",
+      "name": "Sếp Tuấn",
+      "chat_type": "private",
+      "enabled": true,
+      "note": "Tin nhắn riêng của sếp"
+    },
+    {
+      "id": "tc-3",
+      "name": "Gia đình cute",
+      "chat_type": "group",
+      "enabled": true,
+      "note": "@"
+    },
+    {
+      "id": "tc-52272ef9",
+      "name": "Mẹ Nga",
+      "chat_type": "group",
+      "enabled": true,
+      "note": ""
+    },
+    {
+      "id": "tc-642814b0",
+      "name": "*",
+      "chat_type": "private",
+      "enabled": true,
+      "note": ""
+    }
+  ],
+  "rules": [
+    {
+      "id": "rule-1",
+      "name": "Kịch bản riêng cho Sếp Tuấn (Khi nhắn công việc/báo cáo)",
+      "enabled": false,
+      "priority": 100,
+      "scope_type": "specific",
+      "target_names": [
+        "Sếp Tuấn"
+      ],
+      "require_tag_override": "default",
+      "match_type": "contains",
+      "keywords": [
+        "báo cáo",
+        "tiến độ",
+        "xong chưa",
+        "họp",
+        "gấp"
+      ],
+      "reply_templates": [
+        "Dạ em đã nhận được tin nhắn của {sender} lúc {time}. Em đang tổng hợp lại số liệu và sẽ gửi báo cáo chi tiết trong ít phút nữa ạ!",
+        "Dạ vâng ạ, em đang xử lý phần việc này rồi ạ, lát nữa xong em báo {sender} ngay nhé!"
+      ]
+    },
+    {
+      "id": "rule-2",
+      "name": "Nhóm Dự Án - Khi được tag hỏi tiến độ / hỗ trợ",
+      "enabled": true,
+      "priority": 90,
+      "scope_type": "specific",
+      "target_names": [
+        "Nhóm Dự Án Công Ty"
+      ],
+      "require_tag_override": "always",
+      "match_type": "contains",
+      "keywords": [
+        "hỗ trợ",
+        "check",
+        "kiểm tra",
+        "tiến độ",
+        "lỗi",
+        "bug",
+        "review"
+      ],
+      "reply_templates": [
+        "Chào {sender}, mình đã thấy thông báo tag trong {chat_name}. Mình đang kiểm tra vấn đề này và sẽ phản hồi lại ngay nhé!",
+        "Ok {sender} nhé, để mình check lại nội dung này trên hệ thống rồi báo lại vào nhóm {chat_name} nha."
+      ]
+    },
+    {
+      "id": "rule-3",
+      "name": "Báo giá & Tư vấn dịch vụ (Cho mọi tin nhắn riêng hoặc nhóm khi tag)",
+      "enabled": true,
+      "priority": 80,
+      "scope_type": "all",
+      "target_names": [],
+      "require_tag_override": "default",
+      "match_type": "contains",
+      "keywords": [
+        "báo giá",
+        "bảng giá",
+        "chi phí",
+        "giá sao",
+        "tư vấn"
+      ],
+      "reply_templates": [
+        "Chào {sender}! Cảm ơn bạn đã quan tâm. Hiện bên mình đang có bảng giá cập nhật mới nhất ngày {date}. Bạn vui lòng cho mình xin thêm nhu cầu cụ thể để mình gửi báo giá chi tiết nhé!",
+        "Dạ chào {sender}, mình đã nhận được yêu cầu báo giá của bạn. Đợi mình một chút mình gửi file chi phí qua cho bạn xem nhé!"
+      ]
+    },
+    {
+      "id": "rule-4",
+      "name": "Lịch họp / Lịch hẹn",
+      "enabled": true,
+      "priority": 70,
+      "scope_type": "all",
+      "target_names": [],
+      "require_tag_override": "default",
+      "match_type": "contains",
+      "keywords": [
+        "lịch họp",
+        "mấy giờ họp",
+        "link họp",
+        "google meet",
+        "zoom"
+      ],
+      "reply_templates": [
+        "Chào {sender}, mình đã ghi nhận thông tin về lịch họp lúc {time}. Mình sẽ tham gia đúng giờ nhé!"
+      ]
+    },
+    {
+      "id": "rule-5",
+      "name": "Phản hồi mặc định khi được Tag @ trong bất kỳ Nhóm nào",
+      "enabled": true,
+      "priority": 10,
+      "scope_type": "group",
+      "target_names": [],
+      "require_tag_override": "always",
+      "match_type": "all",
+      "keywords": [],
+      "reply_templates": [
+        "Chào {sender}, mình vừa nhận được lượt nhắc tên (@) của bạn trong nhóm {chat_name}. Hiện mình đang bận chút việc, mình sẽ xem và phản hồi bạn sớm nhất nhé!"
+      ]
+    },
+    {
+      "id": "rule-fe580114",
+      "name": "Cá nhân",
+      "enabled": true,
+      "priority": 85,
+      "scope_type": "private",
+      "target_names": [
+        "Bé Dị"
+      ],
+      "require_tag_override": "default",
+      "match_type": "all",
+      "keywords": [
+        "Hi"
+      ],
+      "reply_templates": [
+        "Chào {sender}, mình đã nhận được tin nhắn của bạn trong {chat_name}. Mình sẽ phản hồi lại ngay nhé!"
+      ]
+    },
+    {
+      "id": "rule-a060323a",
+      "name": "IZC-ART-Nhóm xe Bus Izumi",
+      "enabled": true,
+      "priority": 85,
+      "scope_type": "specific",
+      "target_names": [
+        "IZC-ART-Nhóm xe Bus Izumi"
+      ],
+      "require_tag_override": "always",
+      "match_type": "all",
+      "keywords": [],
+      "reply_templates": [
+        "."
+      ]
+    },
+    {
+      "id": "rule-private-all",
+      "name": "Trả lời tự động TẤT CẢ Tin nhắn cá nhân (1-1) (Mọi nội dung)",
+      "enabled": true,
+      "priority": 20,
+      "scope_type": "private",
+      "target_names": [],
+      "require_tag_override": "never",
+      "match_type": "all",
+      "keywords": [],
+      "reply_templates": [
+        "Chào {sender}, mình đã nhận được tin nhắn của bạn lúc {time}. Hiện mình đang bận chút việc, mình sẽ xem và phản hồi bạn ngay khi có thể nhé!",
+        "Dạ chào {sender}, cảm ơn bạn đã nhắn tin. Mình sẽ kiểm tra nội dung và trả lời bạn sớm nhất nhé!"
+      ]
+    }
+  ]
+}

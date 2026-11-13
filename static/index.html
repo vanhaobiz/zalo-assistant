@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0068ff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ZaloBot" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/static/icon.svg" />
+  <link rel="apple-touch-icon" href="/static/icon.svg" />
+  <title>Zalo Auto-Reply Pro — Quản lý Kịch bản Trả lời Tự động</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; transition: background-color 0.2s ease, color 0.2s ease; }
+    .zalo-gradient { background: linear-gradient(135deg, #0068ff 0%, #0052cc 100%); }
+    html.dark .zalo-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); border-bottom: 1px solid #1e293b; }
+
+    /* Dark Mode Overrides */
+    html.dark body { background-color: #0b1120 !important; color: #e2e8f0 !important; }
+    html.dark .bg-white { background-color: #1e293b !important; color: #f1f5f9 !important; }
+    html.dark .bg-slate-50,
+    html.dark .bg-slate-50\/60,
+    html.dark .bg-slate-50\/70 { background-color: #0f172a !important; }
+    html.dark .bg-slate-100 { background-color: #334155 !important; color: #e2e8f0 !important; }
+    html.dark .bg-slate-200,
+    html.dark .bg-slate-200\/70 { background-color: #475569 !important; color: #f1f5f9 !important; }
+    html.dark .bg-blue-50\/60,
+    html.dark .bg-blue-50\/80,
+    html.dark .bg-blue-50\/40,
+    html.dark .bg-blue-50 { background-color: rgba(30, 58, 138, 0.35) !important; color: #bfdbfe !important; }
+    html.dark .bg-amber-50 { background-color: rgba(120, 53, 15, 0.3) !important; color: #fde68a !important; }
+    html.dark .bg-emerald-50 { background-color: rgba(6, 78, 59, 0.35) !important; color: #a7f3d0 !important; }
+    html.dark .bg-rose-50 { background-color: rgba(136, 19, 55, 0.35) !important; color: #fecdd3 !important; }
+
+    html.dark .border-slate-200,
+    html.dark .border-slate-200\/80,
+    html.dark .border-slate-100,
+    html.dark .border-slate-300 { border-color: #334155 !important; }
+    html.dark .border-blue-100,
+    html.dark .border-blue-200,
+    html.dark .border-blue-300 { border-color: #1d4ed8 !important; }
+    html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #334155 !important; }
+
+    html.dark .text-slate-800,
+    html.dark .text-slate-900,
+    html.dark .text-blue-950 { color: #f8fafc !important; }
+    html.dark .text-slate-700 { color: #cbd5e1 !important; }
+    html.dark .text-slate-600,
+    html.dark .text-slate-500 { color: #94a3b8 !important; }
+    html.dark .text-blue-600,
+    html.dark .text-blue-700 { color: #60a5fa !important; }
+    html.dark .text-amber-900,
+    html.dark .text-amber-950,
+    html.dark .text-amber-800 { color: #fcd34d !important; }
+
+    html.dark input[type="text"],
+    html.dark input[type="number"],
+    html.dark select,
+    html.dark textarea {
+      background-color: #0f172a !important;
+      border-color: #475569 !important;
+      color: #f8fafc !important;
+    }
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+      color: #64748b !important;
+    }
+  </style>
+  <script>
+    (function() {
+      const saved = localStorage.getItem('zalo_theme');
+      if (saved === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- Top Header -->
+  <header class="zalo-gradient text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center font-bold text-xl border border-white/25 shadow-inner">
+          Z
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold tracking-tight">Zalo Auto-Reply Studio</h1>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-white/20 font-medium">Playwright Web Automation</span>
+          </div>
+          <p class="text-xs text-blue-100 mt-0.5">
+            Tự động trả lời theo kịch bản riêng cho từng Người, từng Nhóm & nhận diện khi được nhắc tên <code class="bg-white/20 px-1 rounded">@Tag</code>
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Controls -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Browser Status Badge -->
+        <div id="browserBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/30 border border-white/15 text-xs">
+          <span id="browserDot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          <span id="browserStatusText">Trình duyệt: Chưa mở</span>
+        </div>
+
+        <button id="btnLaunchBrowser" onclick="launchBrowser()"
+          class="px-3.5 py-2 rounded-lg bg-white text-blue-700 hover:bg-blue-50 font-semibold text-xs shadow-sm transition flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          <span id="btnLaunchBrowserText">Mở Zalo Web (Chrome)</span>
+        </button>
+
+        <button id="btnCloseBrowser" onclick="closeBrowser()"
+          class="hidden px-3 py-2 rounded-lg bg-rose-500/90 hover:bg-rose-600 text-white font-medium text-xs transition">
+          Đóng trình duyệt
+        </button>
+
+        <!-- Light / Dark Theme Toggle Button -->
+        <button id="btnThemeToggle" onclick="toggleTheme()"
+          title="Chuyển đổi giao diện Sáng / Tối"
+          class="px-3 py-2 rounded-lg bg-slate-900/35 hover:bg-slate-900/50 border border-white/20 text-white font-semibold text-xs shadow-sm transition flex items-center gap-1.5">
+          <span id="themeIcon">🌙</span>
+          <span id="themeText">Giao diện Tối</span>
+        </button>
+
+        <!-- Mobile / Remote Access Button -->
+        <button onclick="openMobileModal()"
+          class="px-3.5 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+          <span>📱 Mở trên Điện thoại / Thiết bị khác</span>
+        </button>
+
+        <!-- Master Bot Switch -->
+        <button id="btnMasterToggle" onclick="toggleBotEnabled()"
+          class="px-4 py-2 rounded-lg font-bold text-xs shadow-sm transition flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white">
+          <span id="masterDot" class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+          <span id="masterToggleText">BẬT TỰ ĐỘNG TRẢ LỜI</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- LIVE QR / ZALO WEB SCREEN PREVIEW BANNER -->
+    <div id="livePreviewCard" class="hidden bg-white rounded-2xl border-2 border-blue-500/80 shadow-md overflow-hidden">
+      <div class="bg-blue-50/80 px-5 py-3 border-b border-blue-100 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-blue-600 animate-ping"></span>
+          <div>
+            <h2 id="livePreviewTitle" class="text-sm font-bold text-blue-950">
+              Quét Mã QR Zalo Trực Tiếp Tại Đây (Hoặc trên cửa sổ Chrome)
+            </h2>
+            <p id="livePreviewSub" class="text-xs text-blue-700">
+              Mở ứng dụng Zalo trên điện thoại → Quét mã QR bên dưới để đăng nhập. Nếu mã QR hết hạn, hãy bấm "Lấy mã QR mới".
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="reloadZaloPage()"
+            class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition">
+            🔄 Lấy mã QR mới / Tải lại trang
+          </button>
+          <button onclick="launchBrowser()"
+            class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-medium text-xs transition">
+            🗔 Đưa cửa sổ Chrome lên trước
+          </button>
+          <button onclick="togglePreviewCollapse()" id="btnTogglePreview"
+            class="px-3 py-1.5 rounded-lg bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 font-medium text-xs transition">
+            Thu gọn
+          </button>
+        </div>
+      </div>
+      <div id="livePreviewBody" class="p-4 bg-slate-900 flex flex-col items-center justify-center">
+        <img id="livePreviewImg" src="" alt="Màn hình Zalo Web trực tiếp"
+          class="max-h-[480px] w-auto rounded-lg border border-slate-700 shadow-lg object-contain bg-white" />
+      </div>
+    </div>
+
+    <!-- Status Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Kết nối Zalo Web</div>
+        <div id="statLoginState" class="text-base font-bold text-slate-800 mt-1">Chưa kết nối</div>
+        <div id="statActiveChat" class="text-xs text-slate-500 mt-1 truncate">Hội thoại đang mở: —</div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Tên @Tag nhận diện của bạn</div>
+        <div id="statTagNames" class="text-sm font-semibold text-blue-600 mt-1 truncate">@TênCủaBạn</div>
+        <div class="text-xs text-slate-500 mt-1">Nhóm: Chỉ trả lời khi được tag @</div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Độ trễ gõ phím ngẫu nhiên</div>
+        <div id="statDelayRange" class="text-base font-bold text-slate-800 mt-1">2.0s - 5.5s</div>
+        <div id="statCooldown" class="text-xs text-slate-500 mt-1">Chống lặp mỗi hội thoại: 15s</div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Thống kê phiên chạy</div>
+        <div class="flex items-baseline gap-4 mt-1">
+          <div>
+            <span id="statRepliesSent" class="text-lg font-bold text-emerald-600">0</span>
+            <span class="text-xs text-slate-500">đã trả lời</span>
+          </div>
+          <div>
+            <span id="statScanned" class="text-sm font-semibold text-slate-700">0</span>
+            <span class="text-xs text-slate-500">tin đã quét</span>
+          </div>
+        </div>
+        <div id="statRulesCount" class="text-xs text-slate-500 mt-1">0 kịch bản đang bật</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 flex flex-wrap gap-2">
+      <button onclick="switchTab('rules')" id="tabBtn-rules"
+        class="tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 transition">
+        1. Kịch bản trả lời (Scenarios)
+      </button>
+      <button onclick="switchTab('targets')" id="tabBtn-targets"
+        class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition">
+        2. Bật/Tắt Từng Người & Từng Nhóm
+      </button>
+      <button onclick="switchTab('settings')" id="tabBtn-settings"
+        class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition">
+        3. Cấu hình @Tag & Độ trễ
+      </button>
+      <button onclick="switchTab('simulator')" id="tabBtn-simulator"
+        class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition">
+        4. Giả lập Kiểm thử & Nhật ký (Logs)
+      </button>
+    </div>
+
+    <!-- TAB 1: RULES MANAGEMENT -->
+    <section id="tab-rules" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Danh sách Kịch bản Trả lời Tự động</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Các kịch bản được kiểm tra theo thứ tự <strong>Độ ưu tiên (Priority) từ cao xuống thấp</strong>. Kịch bản khớp đầu tiên sẽ được chọn để phản hồi.
+          </p>
+        </div>
+        <button onclick="openRuleModal()"
+          class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition flex items-center gap-1.5 self-start sm:self-auto">
+          <span>+ Thêm Kịch bản mới</span>
+        </button>
+      </div>
+
+      <div id="rulesContainer" class="space-y-3"></div>
+    </section>
+
+    <!-- TAB 2: TARGET CONTROLS (PER PERSON / PER GROUP) -->
+    <section id="tab-targets" class="hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Add / Update Target Form -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 h-fit">
+          <div>
+            <h3 class="text-sm font-bold text-slate-800">Thêm / Cấu hình Người hoặc Nhóm</h3>
+            <p class="text-xs text-slate-500 mt-1">
+              Bạn có thể tắt trả lời tự động cho một nhóm/người cụ thể (ví dụ: Nhóm Gia Đình) hoặc chỉ định rõ tên cuộc trò chuyện là Nhóm hay Cá nhân.
+            </p>
+          </div>
+
+          <input type="hidden" id="tcId" value="" />
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Tên Nhóm hoặc Tên Người trên Zalo *</label>
+            <input id="tcName" type="text" placeholder="VD: Nhóm Dự Án Công Ty, Sếp Tuấn..."
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Phân loại hội thoại</label>
+            <select id="tcType" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="group">Nhóm (Group Chat - Mặc định cần @tag)</option>
+              <option value="private">Cá nhân 1-1 (Private Chat - Không cần @tag)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Trạng thái trả lời tự động</label>
+            <select id="tcEnabled" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="true">Cho phép trả lời tự động (Bật)</option>
+              <option value="false">Chặn / Không tự động trả lời (Tắt)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Ghi chú</label>
+            <input id="tcNote" type="text" placeholder="Ghi chú thêm..."
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div class="flex gap-2 pt-1">
+            <button onclick="saveTargetControl()" class="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition">
+              Lưu cấu hình Người/Nhóm
+            </button>
+            <button onclick="resetTargetForm()" class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+              Làm mới
+            </button>
+          </div>
+        </div>
+
+        <!-- Target List -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-800">Danh sách Người & Nhóm đã cấu hình</h3>
+            <span class="text-xs text-slate-500">Các cuộc trò chuyện không nằm trong danh sách này vẫn hoạt động bình thường theo Kịch bản.</span>
+          </div>
+          <div id="targetsContainer" class="divide-y divide-slate-100"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SETTINGS (@TAG & HUMAN DELAY) -->
+    <section id="tab-settings" class="hidden">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl space-y-5">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Cấu hình Nhận diện @Tag & Hành vi Trả lời</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Thiết lập tên tài khoản Zalo của bạn để bot biết khi nào bạn được nhắc tên (<code class="bg-slate-100 px-1 rounded">@</code>) trong nhóm.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Danh sách tên @Tag của bạn trong Nhóm (cách nhau bởi dấu phẩy)
+            </label>
+            <input id="setMyTagNames" type="text" placeholder="VD: @Nguyễn Văn A, @Minh, @All"
+              class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p class="text-xs text-slate-500 mt-1">
+              Mẹo: Nhập tên hiển thị Zalo của bạn (ví dụ <code class="bg-slate-100 px-1 rounded">@Tên_Zalo_Của_Bạn</code>). Ngoài ra bot cũng tự động nhận diện thẻ highlight <code class="bg-slate-100 px-1 rounded">@mention</code> trực tiếp trên giao diện Zalo Web.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <label class="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50/60 cursor-pointer">
+              <input id="setGroupRequireTag" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 rounded" />
+              <div>
+                <div class="text-xs font-semibold text-slate-800">Trong Nhóm: Chỉ trả lời khi được tag @</div>
+                <div class="text-xs text-slate-500 mt-0.5">Nếu ai đó nhắn trong nhóm mà không tag @ tên bạn, bot sẽ im lặng bỏ qua.</div>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50/60 cursor-pointer">
+              <input id="setPrivateAutoReplyNoTag" type="checkbox" checked class="mt-0.5 h-4 w-4 text-blue-600 rounded" />
+              <div>
+                <div class="text-xs font-semibold text-slate-800">Tin nhắn cá nhân (1-1): Tự động trả lời ngay (Không cần tag @)</div>
+                <div class="text-xs text-slate-500 mt-0.5">Khi có người nhắn tin riêng 1-1 cho bạn, bot sẽ tự động trả lời tất cả tin nhắn theo kịch bản mà không cần họ phải gõ @Tên_bạn.</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Độ trễ tối thiểu (giây)</label>
+              <input id="setDelayMin" type="number" step="0.5" min="0.5" max="60"
+                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Độ trễ tối đa (giây)</label>
+              <input id="setDelayMax" type="number" step="0.5" min="1" max="120"
+                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Thời gian nghỉ chống lặp (giây)</label>
+              <input id="setCooldown" type="number" step="1" min="2" max="3600"
+                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <label class="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50/60 cursor-pointer">
+              <input id="setAutoOpenUnread" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 rounded" />
+              <div>
+                <div class="text-xs font-semibold text-slate-800">Tự động mở hội thoại có tin nhắn mới chưa đọc</div>
+                <div class="text-xs text-slate-500 mt-0.5">Tự động click vào các cuộc trò chuyện có chấm đỏ thông báo tin nhắn mới ở cột bên trái Zalo Web.</div>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50/60 cursor-pointer">
+              <input id="setTypingSimulation" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 rounded" />
+              <div>
+                <div class="text-xs font-semibold text-slate-800">Giả lập gõ từng phím như người thật</div>
+                <div class="text-xs text-slate-500 mt-0.5">Gõ chữ tuần tự vào ô chat Zalo thay vì dán tức thời để tự nhiên và an toàn nhất.</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="pt-3 flex items-center gap-3">
+            <button onclick="saveSettingsForm()"
+              class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-sm transition">
+              Lưu Cấu hình Chung
+            </button>
+            <span id="settingsSavedToast" class="text-xs font-medium text-emerald-600 hidden">✓ Đã lưu cấu hình thành công!</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: SIMULATOR & REAL-TIME LOGS -->
+    <section id="tab-simulator" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left: Simulator -->
+        <div class="lg:col-span-5 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 h-fit">
+          <div>
+            <h3 class="text-sm font-bold text-slate-800">Phòng Giả lập & Kiểm thử Kịch bản</h3>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Nhập thử một tình huống tin nhắn để kiểm tra xem Bot sẽ chọn kịch bản nào và trả lời ra sao.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tên cuộc trò chuyện (Nhóm / Người)</label>
+              <input id="simChatName" type="text" value="Nhóm Dự Án Công Ty"
+                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tên người nhắn</label>
+              <input id="simSenderName" type="text" value="Anh Hoàng"
+                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Loại cuộc trò chuyện</label>
+              <select id="simChatType" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+                <option value="group">Nhóm (Group Chat)</option>
+                <option value="private">Tin nhắn riêng (1-1)</option>
+              </select>
+            </div>
+            <div class="flex items-end pb-1">
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+                <input id="simDomMention" type="checkbox" checked class="h-4 w-4 text-blue-600 rounded" />
+                <span>Có thẻ <code class="bg-blue-50 text-blue-700 px-1 rounded">@Tag tên bạn</code></span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nội dung tin nhắn đến</label>
+            <textarea id="simMessage" rows="3"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg"
+              placeholder="VD: @Minh ơi kiểm tra giúp anh tiến độ dự án này nhé!">@Minh ơi hỗ trợ kiểm tra giúp anh tiến độ dự án này nhé!</textarea>
+          </div>
+
+          <button onclick="runSimulation()"
+            class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow-sm transition">
+            Chạy Kiểm thử Kịch bản
+          </button>
+
+          <div id="simResultBox" class="hidden p-4 rounded-xl border text-xs space-y-2"></div>
+        </div>
+
+        <!-- Right: Live Activity Logs -->
+        <div class="lg:col-span-7 bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-sm font-bold text-slate-800">Nhật ký Hoạt động Thời gian thực (Live Logs)</h3>
+              <p class="text-xs text-slate-500">Tự động cập nhật mọi tin nhắn quét được và phản hồi đã gửi</p>
+            </div>
+            <button onclick="clearLogs()" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition">
+              Xóa nhật ký
+            </button>
+          </div>
+
+          <div id="logsContainer" class="mt-3 space-y-2.5 max-h-[500px] overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: MOBILE & OTHER DEVICES ACCESS -->
+  <div id="mobileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <span>📱 Sử dụng App trên Điện thoại & Thiết bị khác</span>
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Quét mã QR bằng Camera điện thoại hoặc mở đường link bên dưới để điều khiển kịch bản từ xa.
+          </p>
+        </div>
+        <button onclick="closeMobileModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">✕</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Option 1: Internet Anywhere (Cloudflare Tunnel) -->
+        <div class="p-4 rounded-xl border-2 border-blue-500 bg-blue-50/40 flex flex-col items-center text-center space-y-3">
+          <span class="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[11px] font-bold">
+            🌐 MỌI NƠI (4G / 5G / Wi-Fi bất kỳ)
+          </span>
+          <div class="bg-white p-2.5 rounded-xl border border-blue-200 shadow-xs">
+            <img id="qrPublicImg" src="" alt="QR Public URL" class="w-40 h-40 object-contain" />
+          </div>
+          <div class="w-full space-y-1.5">
+            <div class="text-xs font-semibold text-slate-700">Link Internet Công khai (HTTPS):</div>
+            <input id="inputPublicUrl" readonly type="text" value="Đang khởi tạo đường truyền..."
+              class="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-blue-300 rounded-lg text-blue-700 text-center" />
+            <div class="flex gap-2 justify-center pt-1">
+              <button onclick="copyShareUrl('inputPublicUrl')"
+                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
+                📋 Sao chép Link
+              </button>
+              <button onclick="restartTunnel()"
+                class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-medium rounded-lg transition">
+                🔄 Đổi Link mới
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 2: Same Wi-Fi / LAN -->
+        <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col items-center text-center space-y-3">
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-bold">
+            📶 CÙNG MẠNG WI-FI (Tốc độ cao)
+          </span>
+          <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs">
+            <img id="qrLanImg" src="" alt="QR LAN URL" class="w-40 h-40 object-contain" />
+          </div>
+          <div class="w-full space-y-1.5">
+            <div class="text-xs font-semibold text-slate-700">Link nội bộ (Cùng Wi-Fi với máy tính):</div>
+            <input id="inputLanUrl" readonly type="text" value="http://192.168.1.19:8000"
+              class="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-lg text-slate-800 text-center" />
+            <div class="flex gap-2 justify-center pt-1">
+              <button onclick="copyShareUrl('inputLanUrl')"
+                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition">
+                📋 Sao chép Link Wi-Fi
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions to Install as Mobile App (PWA) -->
+      <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-1.5">
+        <div class="font-bold text-amber-900">💡 Mẹo cài đặt thành App trên Màn hình chính điện thoại:</div>
+        <div>• <strong>Trên iPhone (Safari):</strong> Mở link trên → Bấm nút <strong>Chia sẻ (Share)</strong> ở thanh dưới cùng → Chọn <strong>"Thêm vào Màn hình chính" (Add to Home Screen)</strong>.</div>
+        <div>• <strong>Trên Android (Chrome):</strong> Mở link trên → Bấm dấu <strong>3 chấm (⋮)</strong> góc phải trên → Chọn <strong>"Cài đặt ứng dụng"</strong> hoặc <strong>"Thêm vào Màn hình chính"</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE / EDIT RULE -->
+  <div id="ruleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 id="ruleModalTitle" class="text-base font-bold text-slate-800">Thêm Kịch bản Trả lời Tự động</h3>
+        <button onclick="closeRuleModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">✕</button>
+      </div>
+
+      <input type="hidden" id="ruleId" />
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="sm:col-span-3">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Tên kịch bản *</label>
+          <input id="ruleName" type="text" placeholder="VD: Trả lời Sếp Tuấn / Báo giá khách hàng / Nhóm Dự Án..."
+            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Độ ưu tiên (Priority)</label>
+          <input id="rulePriority" type="number" value="80"
+            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Phạm vi áp dụng</label>
+          <select id="ruleScopeType" onchange="onRuleScopeChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+            <option value="all">Tất cả (Mọi Nhóm & Tin nhắn riêng)</option>
+            <option value="specific">Chỉ Nhóm hoặc Người cụ thể (Theo tên)</option>
+            <option value="group">Tất cả các Nhóm (Group Chats)</option>
+            <option value="private">Tất cả Tin nhắn riêng 1-1 (Private Chats)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Điều kiện được Tag @Tên_bạn</label>
+          <select id="ruleTagOverride" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+            <option value="default">Theo mặc định (Nhóm cần @Tag, 1-1 không cần)</option>
+            <option value="always">Luôn bắt buộc phải có @Tag tên tôi</option>
+            <option value="never">Không cần @Tag (Trả lời ngay khi khớp từ khóa)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="ruleTargetNamesBox">
+        <label class="block text-xs font-semibold text-slate-700 mb-1">
+          Tên Nhóm hoặc Tên Người áp dụng (cách nhau bằng dấu phẩy, để trống nếu áp dụng cho tất cả)
+        </label>
+        <input id="ruleTargetNames" type="text" placeholder="VD: Nhóm Dự Án Công Ty, Sếp Tuấn, Khách hàng VIP"
+          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Kiểu khớp nội dung</label>
+          <select id="ruleMatchType" onchange="onRuleMatchTypeChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+            <option value="contains">Chứa một trong các từ khóa</option>
+            <option value="exact">Khớp chính xác từ khóa</option>
+            <option value="regex">Biểu thức chính quy (Regex)</option>
+            <option value="all">Mọi nội dung tin nhắn (Mặc định)</option>
+          </select>
+        </div>
+        <div id="ruleKeywordsBox" class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Từ khóa kích hoạt (cách nhau bằng dấu phẩy)</label>
+          <input id="ruleKeywords" type="text" placeholder="VD: báo giá, chi phí, hỗ trợ, tiến độ, lịch họp"
+            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-xs font-semibold text-slate-700">
+            Nội dung tin nhắn trả lời tự động (Mỗi dòng là 1 phương án, bot sẽ chọn ngẫu nhiên 1 dòng) *
+          </label>
+        </div>
+        <textarea id="ruleTemplates" rows="4"
+          placeholder="Chào {sender}, mình đã nhận được tin nhắn trong {chat_name} lúc {time}. Mình sẽ phản hồi ngay nhé!"
+          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg"></textarea>
+        <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-slate-500">
+          <span>Chèn biến tự động:</span>
+          <button type="button" onclick="insertTemplateVar('{sender}')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700 font-mono">{sender}</button>
+          <button type="button" onclick="insertTemplateVar('{chat_name}')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700 font-mono">{chat_name}</button>
+          <button type="button" onclick="insertTemplateVar('{time}')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700 font-mono">{time}</button>
+          <button type="button" onclick="insertTemplateVar('{date}')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700 font-mono">{date}</button>
+          <button type="button" onclick="insertTemplateVar('{message}')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700 font-mono">{message}</button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+          <input id="ruleEnabled" type="checkbox" checked class="h-4 w-4 text-blue-600 rounded" />
+          <span>Kích hoạt kịch bản này ngay</span>
+        </label>
+
+        <div class="flex items-center gap-2">
+          <button onclick="closeRuleModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs">
+            Hủy
+          </button>
+          <button onclick="saveRuleModal()" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm">
+            Lưu Kịch bản
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appState = {
+      status: {},
+      config: { settings: {}, rules: [], target_controls: [] },
+      logs: []
+    };
+    let settingsLoadedOnce = false;
+    let previewCollapsedManual = false;
+
+    async function fetchState() {
+      try {
+        const res = await fetch('/api/state');
+        const data = await res.json();
+        appState = data;
+        renderHeaderAndStats();
+        renderRules();
+        renderTargets();
+        renderLogs();
+        if (!settingsLoadedOnce) {
+          populateSettingsForm();
+          settingsLoadedOnce = true;
+        }
+        await updateLivePreview();
+        renderShareInfo();
+      } catch (e) {
+        console.error('Lỗi tải trạng thái:', e);
+      }
+    }
+
+    function openMobileModal() {
+      const m = document.getElementById('mobileModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      renderShareInfo();
+    }
+
+    function closeMobileModal() {
+      const m = document.getElementById('mobileModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    function renderShareInfo() {
+      const sh = appState.share || {};
+      const lanUrl = sh.lan_url || 'http://192.168.1.19:8000';
+      const pubUrl = sh.public_url || '';
+
+      const inputLan = document.getElementById('inputLanUrl');
+      const qrLan = document.getElementById('qrLanImg');
+      if (inputLan) inputLan.value = lanUrl;
+      if (qrLan) {
+        const targetQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(lanUrl)}`;
+        if (qrLan.src !== targetQr) qrLan.src = targetQr;
+      }
+
+      const inputPub = document.getElementById('inputPublicUrl');
+      const qrPub = document.getElementById('qrPublicImg');
+      if (pubUrl) {
+        if (inputPub) inputPub.value = pubUrl;
+        if (qrPub) {
+          const pubQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(pubUrl)}`;
+          if (qrPub.src !== pubQr) qrPub.src = pubQr;
+        }
+      } else {
+        if (inputPub) inputPub.value = 'Đang tạo link Internet công khai (chờ 3 giây)...';
+      }
+    }
+
+    function copyShareUrl(inputId) {
+      const el = document.getElementById(inputId);
+      if (!el || !el.value.startsWith('http')) return;
+      navigator.clipboard.writeText(el.value);
+      alert('Đã sao chép đường dẫn: ' + el.value);
+    }
+
+    async function restartTunnel() {
+      document.getElementById('inputPublicUrl').value = 'Đang khởi tạo link mới...';
+      await fetch('/api/share/restart', { method: 'POST' });
+      await fetchState();
+    }
+
+    async function updateLivePreview() {
+      const st = appState.status || {};
+      const card = document.getElementById('livePreviewCard');
+      const body = document.getElementById('livePreviewBody');
+      const title = document.getElementById('livePreviewTitle');
+      const sub = document.getElementById('livePreviewSub');
+      const img = document.getElementById('livePreviewImg');
+
+      if (!st.browser_running) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      card.classList.remove('hidden');
+      if (!st.logged_in) {
+        title.textContent = '📲 Quét Mã QR Zalo Trực Tiếp Tại Đây (Đang chờ bạn quét mã QR)';
+        sub.textContent = 'Mở Zalo trên điện thoại → Quét mã QR bên dưới để kết nối. Ảnh màn hình tự động làm mới mỗi 2 giây.';
+        if (!previewCollapsedManual) {
+          body.classList.remove('hidden');
+          document.getElementById('btnTogglePreview').textContent = 'Thu gọn';
+        }
+      } else {
+        title.textContent = `✅ Đã kết nối Zalo Web (${st.detected_profile_name || 'Đang hoạt động'}) — Xem màn hình trực tiếp`;
+        sub.textContent = `Hội thoại đang mở: ${st.current_chat_name || 'Chưa mở hội thoại'}`;
+      }
+
+      if (!body.classList.contains('hidden')) {
+        try {
+          const sRes = await fetch('/api/browser/screenshot');
+          const sData = await sRes.json();
+          if (sData.image) {
+            img.src = sData.image;
+          }
+        } catch (err) {
+          console.error('Lỗi tải ảnh màn hình:', err);
+        }
+      }
+    }
+
+    function togglePreviewCollapse() {
+      const body = document.getElementById('livePreviewBody');
+      const btn = document.getElementById('btnTogglePreview');
+      const isHidden = body.classList.toggle('hidden');
+      previewCollapsedManual = isHidden;
+      btn.textContent = isHidden ? 'Mở xem màn hình Zalo' : 'Thu gọn';
+      if (!isHidden) updateLivePreview();
+    }
+
+    async function reloadZaloPage() {
+      await fetch('/api/browser/reload', { method: 'POST' });
+      setTimeout(updateLivePreview, 1000);
+    }
+
+    function switchTab(tabName) {
+      ['rules', 'targets', 'settings', 'simulator'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabName);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (t === tabName) {
+          btn.className = 'tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 transition';
+        } else {
+          btn.className = 'tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+      if (tabName === 'settings') populateSettingsForm();
+    }
+
+    function renderHeaderAndStats() {
+      const st = appState.status || {};
+      const cfg = appState.config || {};
+      const settings = cfg.settings || {};
+      const rules = cfg.rules || [];
+
+      // Browser badge
+      const dot = document.getElementById('browserDot');
+      const txt = document.getElementById('browserStatusText');
+      const btnLaunchText = document.getElementById('btnLaunchBrowserText');
+      const btnClose = document.getElementById('btnCloseBrowser');
+
+      if (st.browser_running && st.logged_in) {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+        txt.textContent = `Zalo Web: Đã đăng nhập${st.detected_profile_name ? ' (' + st.detected_profile_name + ')' : ''}`;
+        btnLaunchText.textContent = 'Đang mở Zalo Web';
+        btnClose.classList.remove('hidden');
+      } else if (st.browser_running) {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-300 animate-ping';
+        txt.textContent = 'Zalo Web: Đang chờ quét mã QR...';
+        btnLaunchText.textContent = 'Đang chờ đăng nhập QR';
+        btnClose.classList.remove('hidden');
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+        txt.textContent = 'Trình duyệt: Chưa mở';
+        btnLaunchText.textContent = 'Mở Zalo Web (Chrome)';
+        btnClose.classList.add('hidden');
+      }
+
+      // Master Bot Toggle
+      const btnMaster = document.getElementById('btnMasterToggle');
+      const masterText = document.getElementById('masterToggleText');
+      if (settings.bot_enabled) {
+        btnMaster.className = 'px-4 py-2 rounded-lg font-bold text-xs shadow-sm transition flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white';
+        masterText.textContent = 'ĐANG BẬT TỰ ĐỘNG TRẢ LỜI (Bấm để Tạm dừng)';
+      } else {
+        btnMaster.className = 'px-4 py-2 rounded-lg font-bold text-xs shadow-sm transition flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white';
+        masterText.textContent = 'ĐANG TẠM DỪNG (Bấm để Bật Tự động Trả lời)';
+      }
+
+      // Stats cards
+      document.getElementById('statLoginState').textContent = st.logged_in
+        ? `Đã kết nối (${st.detected_profile_name || 'Zalo Web'})`
+        : (st.browser_running ? 'Chờ quét QR trên Chrome' : 'Chưa mở trình duyệt');
+      document.getElementById('statActiveChat').textContent = `Hội thoại đang mở: ${st.current_chat_name || '—'}`;
+      document.getElementById('statTagNames').textContent = (settings.my_tag_names || []).join(', ') || '@TênCủaBạn';
+      document.getElementById('statDelayRange').textContent = `${settings.delay_min_sec ?? 2}s - ${settings.delay_max_sec ?? 5}s`;
+      document.getElementById('statCooldown').textContent = `Chống lặp mỗi hội thoại: ${settings.cooldown_sec ?? 15}s`;
+      document.getElementById('statRepliesSent').textContent = st.stats ? st.stats.replies_sent : 0;
+      document.getElementById('statScanned').textContent = st.stats ? st.stats.messages_scanned : 0;
+      const enabledCount = rules.filter(r => r.enabled).length;
+      document.getElementById('statRulesCount').textContent = `${enabledCount}/${rules.length} kịch bản đang bật`;
+    }
+
+    function scopeBadgeHtml(rule) {
+      const s = rule.scope_type;
+      const targets = (rule.target_names || []).join(', ');
+      if (s === 'specific') {
+        return `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">🎯 Riêng cho: ${escapeHtml(targets || 'Chưa chọn')}</span>`;
+      }
+      if (s === 'group') {
+        return `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">👥 Mọi Nhóm${targets ? ' (' + escapeHtml(targets) + ')' : ''}</span>`;
+      }
+      if (s === 'private') {
+        return `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">👤 Tin nhắn riêng 1-1${targets ? ' (' + escapeHtml(targets) + ')' : ''}</span>`;
+      }
+      return `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">🌐 Tất cả Nhóm & Cá nhân</span>`;
+    }
+
+    function tagBadgeHtml(rule) {
+      const t = rule.require_tag_override || 'default';
+      if (t === 'always') {
+        return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">@ Bắt buộc được Tag tên</span>`;
+      }
+      if (t === 'never') {
+        return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Không cần @Tag</span>`;
+      }
+      return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">@Tag: Nhóm cần @ / 1-1 không cần</span>`;
+    }
+
+    function renderRules() {
+      const container = document.getElementById('rulesContainer');
+      const rules = [...(appState.config.rules || [])].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+      if (!rules.length) {
+        container.innerHTML = `
+          <div class="bg-white p-8 rounded-xl border border-slate-200 text-center text-slate-500 text-sm">
+            Chưa có kịch bản nào. Hãy bấm <strong>+ Thêm Kịch bản mới</strong> để bắt đầu!
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = rules.map(rule => {
+        const kwText = rule.match_type === 'all'
+          ? '<span class="italic text-slate-500">Khớp mọi nội dung tin nhắn</span>'
+          : (rule.keywords || []).map(k => `<code class="px-2 py-0.5 bg-slate-100 rounded text-slate-700 font-medium">${escapeHtml(k)}</code>`).join(' ');
+
+        const repliesHtml = (rule.reply_templates || []).map(t =>
+          `<div class="text-xs text-slate-700 bg-blue-50/60 border border-blue-100 rounded-lg px-3 py-2">💬 "${escapeHtml(t)}"</div>`
+        ).join('');
+
+        return `
+          <div class="bg-white rounded-xl p-4 border ${rule.enabled ? 'border-slate-200' : 'border-slate-200 opacity-60'} shadow-sm transition">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-100">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-slate-800 text-white text-xs font-bold">Ưu tiên: ${rule.priority ?? 50}</span>
+                <h3 class="text-sm font-bold text-slate-800">${escapeHtml(rule.name)}</h3>
+                ${scopeBadgeHtml(rule)}
+                ${tagBadgeHtml(rule)}
+              </div>
+
+              <div class="flex items-center gap-2 self-end sm:self-auto">
+                <button onclick="toggleRuleEnabled('${rule.id}')"
+                  class="px-3 py-1 rounded-lg text-xs font-semibold ${rule.enabled ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}">
+                  ${rule.enabled ? 'Đang Bật' : 'Đang Tắt'}
+                </button>
+                <button onclick="editRule('${rule.id}')"
+                  class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700">
+                  Sửa
+                </button>
+                <button onclick="deleteRule('${rule.id}')"
+                  class="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 hover:bg-rose-100 text-rose-600">
+                  Xóa
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-3 space-y-2">
+              <div class="text-xs text-slate-600 flex flex-wrap items-center gap-1.5">
+                <span class="font-semibold text-slate-500">Từ khóa (${rule.match_type}):</span>
+                ${kwText}
+              </div>
+              <div class="space-y-1.5 pt-1">
+                ${repliesHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTargets() {
+      const container = document.getElementById('targetsContainer');
+      const targets = appState.config.target_controls || [];
+      if (!targets.length) {
+        container.innerHTML = `<div class="py-6 text-center text-xs text-slate-400">Chưa có mục nào.</div>`;
+        return;
+      }
+      container.innerHTML = targets.map(tc => `
+        <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-slate-800">${escapeHtml(tc.name)}</span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium ${tc.chat_type === 'group' ? 'bg-blue-100 text-blue-700' : 'bg-teal-100 text-teal-700'}">
+                ${tc.chat_type === 'group' ? '👥 Nhóm' : '👤 Cá nhân 1-1'}
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${tc.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                ${tc.enabled ? 'Cho phép trả lời' : 'Đã tắt tự động trả lời'}
+              </span>
+            </div>
+            ${tc.note ? `<p class="text-xs text-slate-500 mt-0.5">${escapeHtml(tc.note)}</p>` : ''}
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="quickToggleTarget('${tc.id}')" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700">
+              Đổi Bật/Tắt
+            </button>
+            <button onclick="fillTargetForm('${tc.id}')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-600">
+              Sửa
+            </button>
+            <button onclick="deleteTarget('${tc.id}')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 hover:bg-rose-100 text-rose-600">
+              Xóa
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderLogs() {
+      const container = document.getElementById('logsContainer');
+      const logs = appState.logs || [];
+      if (!logs.length) {
+        container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">Chưa có nhật ký hoạt động nào.</div>`;
+        return;
+      }
+      const badgeStyles = {
+        info: 'bg-blue-100 text-blue-700 border-blue-200',
+        success: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+        warning: 'bg-amber-100 text-amber-800 border-amber-200',
+        error: 'bg-rose-100 text-rose-800 border-rose-200'
+      };
+      container.innerHTML = logs.map(item => `
+        <div class="p-3 rounded-xl border border-slate-100 bg-slate-50/70 text-xs space-y-1">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-bold text-slate-800">${escapeHtml(item.title)}</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono ${badgeStyles[item.level] || badgeStyles.info}">${item.time}</span>
+          </div>
+          ${item.detail ? `<div class="text-slate-600">${escapeHtml(item.detail)}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    async function launchBrowser() {
+      document.getElementById('btnLaunchBrowserText').textContent = 'Đang khởi động Chrome...';
+      await fetch('/api/browser/launch', { method: 'POST' });
+      await fetchState();
+    }
+
+    async function closeBrowser() {
+      await fetch('/api/browser/close', { method: 'POST' });
+      await fetchState();
+    }
+
+    async function toggleBotEnabled() {
+      const current = !!(appState.config.settings && appState.config.settings.bot_enabled);
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bot_enabled: !current })
+      });
+      await fetchState();
+    }
+
+    // Rule Modal Functions
+    function openRuleModal(rule = null) {
+      document.getElementById('ruleModal').classList.remove('hidden');
+      document.getElementById('ruleModal').classList.add('flex');
+      if (rule) {
+        document.getElementById('ruleModalTitle').textContent = 'Chỉnh sửa Kịch bản';
+        document.getElementById('ruleId').value = rule.id;
+        document.getElementById('ruleName').value = rule.name || '';
+        document.getElementById('rulePriority').value = rule.priority ?? 50;
+        document.getElementById('ruleScopeType').value = rule.scope_type || 'all';
+        document.getElementById('ruleTagOverride').value = rule.require_tag_override || 'default';
+        document.getElementById('ruleTargetNames').value = (rule.target_names || []).join(', ');
+        document.getElementById('ruleMatchType').value = rule.match_type || 'contains';
+        document.getElementById('ruleKeywords').value = (rule.keywords || []).join(', ');
+        document.getElementById('ruleTemplates').value = (rule.reply_templates || []).join('\n');
+        document.getElementById('ruleEnabled').checked = !!rule.enabled;
+      } else {
+        document.getElementById('ruleModalTitle').textContent = 'Thêm Kịch bản Trả lời Tự động';
+        document.getElementById('ruleId').value = '';
+        document.getElementById('ruleName').value = '';
+        document.getElementById('rulePriority').value = 85;
+        document.getElementById('ruleScopeType').value = 'specific';
+        document.getElementById('ruleTagOverride').value = 'default';
+        document.getElementById('ruleTargetNames').value = '';
+        document.getElementById('ruleMatchType').value = 'contains';
+        document.getElementById('ruleKeywords').value = '';
+        document.getElementById('ruleTemplates').value = 'Chào {sender}, mình đã nhận được tin nhắn của bạn trong {chat_name}. Mình sẽ phản hồi lại ngay nhé!';
+        document.getElementById('ruleEnabled').checked = true;
+      }
+      onRuleScopeChange();
+      onRuleMatchTypeChange();
+    }
+
+    function closeRuleModal() {
+      document.getElementById('ruleModal').classList.add('hidden');
+      document.getElementById('ruleModal').classList.remove('flex');
+    }
+
+    function onRuleScopeChange() {
+      const scope = document.getElementById('ruleScopeType').value;
+      const box = document.getElementById('ruleTargetNamesBox');
+      box.style.opacity = scope === 'all' ? '0.65' : '1';
+    }
+
+    function onRuleMatchTypeChange() {
+      const mt = document.getElementById('ruleMatchType').value;
+      const box = document.getElementById('ruleKeywordsBox');
+      box.style.opacity = mt === 'all' ? '0.4' : '1';
+    }
+
+    function insertTemplateVar(v) {
+      const ta = document.getElementById('ruleTemplates');
+      const start = ta.selectionStart || ta.value.length;
+      const end = ta.selectionEnd || ta.value.length;
+      ta.value = ta.value.slice(0, start) + v + ta.value.slice(end);
+      ta.focus();
+    }
+
+    async function saveRuleModal() {
+      const name = document.getElementById('ruleName').value.trim();
+      const templates = document.getElementById('ruleTemplates').value
+        .split('\n')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if (!name || !templates.length) {
+        alert('Vui lòng nhập Tên kịch bản và ít nhất 1 câu trả lời mẫu!');
+        return;
+      }
+
+      const payload = {
+        id: document.getElementById('ruleId').value || null,
+        name,
+        priority: parseInt(document.getElementById('rulePriority').value || '50', 10),
+        scope_type: document.getElementById('ruleScopeType').value,
+        require_tag_override: document.getElementById('ruleTagOverride').value,
+        target_names: document.getElementById('ruleTargetNames').value.split(',').map(s => s.trim()).filter(Boolean),
+        match_type: document.getElementById('ruleMatchType').value,
+        keywords: document.getElementById('ruleKeywords').value.split(',').map(s => s.trim()).filter(Boolean),
+        reply_templates: templates,
+        enabled: document.getElementById('ruleEnabled').checked
+      };
+
+      await fetch('/api/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      closeRuleModal();
+      await fetchState();
+    }
+
+    function editRule(id) {
+      const rule = (appState.config.rules || []).find(r => r.id === id);
+      if (rule) openRuleModal(rule);
+    }
+
+    async function toggleRuleEnabled(id) {
+      const rule = (appState.config.rules || []).find(r => r.id === id);
+      if (!rule) return;
+      const updated = { ...rule, enabled: !rule.enabled };
+      await fetch('/api/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      await fetchState();
+    }
+
+    async function deleteRule(id) {
+      if (!confirm('Bạn có chắc muốn xóa kịch bản này?')) return;
+      await fetch(`/api/rules/${id}`, { method: 'DELETE' });
+      await fetchState();
+    }
+
+    // Target Control Functions
+    function fillTargetForm(id) {
+      const tc = (appState.config.target_controls || []).find(c => c.id === id);
+      if (!tc) return;
+      document.getElementById('tcId').value = tc.id;
+      document.getElementById('tcName').value = tc.name;
+      document.getElementById('tcType').value = tc.chat_type || 'group';
+      document.getElementById('tcEnabled').value = String(!!tc.enabled);
+      document.getElementById('tcNote').value = tc.note || '';
+    }
+
+    function resetTargetForm() {
+      document.getElementById('tcId').value = '';
+      document.getElementById('tcName').value = '';
+      document.getElementById('tcType').value = 'group';
+      document.getElementById('tcEnabled').value = 'true';
+      document.getElementById('tcNote').value = '';
+    }
+
+    async function saveTargetControl() {
+      const name = document.getElementById('tcName').value.trim();
+      if (!name) {
+        alert('Vui lòng nhập tên Nhóm hoặc tên Người trên Zalo!');
+        return;
+      }
+      const payload = {
+        id: document.getElementById('tcId').value || null,
+        name,
+        chat_type: document.getElementById('tcType').value,
+        enabled: document.getElementById('tcEnabled').value === 'true',
+        note: document.getElementById('tcNote').value.trim()
+      };
+      await fetch('/api/targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      resetTargetForm();
+      await fetchState();
+    }
+
+    async function quickToggleTarget(id) {
+      const tc = (appState.config.target_controls || []).find(c => c.id === id);
+      if (!tc) return;
+      await fetch('/api/targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...tc, enabled: !tc.enabled })
+      });
+      await fetchState();
+    }
+
+    async function deleteTarget(id) {
+      await fetch(`/api/targets/${id}`, { method: 'DELETE' });
+      await fetchState();
+    }
+
+    // Settings Form
+    function populateSettingsForm() {
+      const s = (appState.config && appState.config.settings) || {};
+      document.getElementById('setMyTagNames').value = (s.my_tag_names || []).join(', ');
+      document.getElementById('setGroupRequireTag').checked = s.group_require_tag !== false;
+      document.getElementById('setPrivateAutoReplyNoTag').checked = !s.private_require_tag;
+      document.getElementById('setDelayMin').value = s.delay_min_sec ?? 2.0;
+      document.getElementById('setDelayMax').value = s.delay_max_sec ?? 5.5;
+      document.getElementById('setCooldown').value = s.cooldown_sec ?? 15;
+      document.getElementById('setAutoOpenUnread').checked = s.auto_open_unread !== false;
+      document.getElementById('setTypingSimulation').checked = s.typing_simulation !== false;
+    }
+
+    async function saveSettingsForm() {
+      const payload = {
+        my_tag_names: document.getElementById('setMyTagNames').value.split(',').map(s => s.trim()).filter(Boolean),
+        group_require_tag: document.getElementById('setGroupRequireTag').checked,
+        private_require_tag: !document.getElementById('setPrivateAutoReplyNoTag').checked,
+        delay_min_sec: parseFloat(document.getElementById('setDelayMin').value || '2'),
+        delay_max_sec: parseFloat(document.getElementById('setDelayMax').value || '5'),
+        cooldown_sec: parseInt(document.getElementById('setCooldown').value || '15', 10),
+        auto_open_unread: document.getElementById('setAutoOpenUnread').checked,
+        typing_simulation: document.getElementById('setTypingSimulation').checked
+      };
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const toast = document.getElementById('settingsSavedToast');
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+      await fetchState();
+    }
+
+    // Simulator
+    async function runSimulation() {
+      const payload = {
+        chat_name: document.getElementById('simChatName').value.trim(),
+        sender_name: document.getElementById('simSenderName').value.trim(),
+        chat_type: document.getElementById('simChatType').value,
+        message_text: document.getElementById('simMessage').value,
+        dom_mentioned: document.getElementById('simDomMention').checked
+      };
+      const res = await fetch('/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      const r = data.result;
+      const box = document.getElementById('simResultBox');
+      box.classList.remove('hidden');
+
+      if (r.matched) {
+        box.className = 'p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-900 text-xs space-y-2';
+        box.innerHTML = `
+          <div class="font-bold text-emerald-800 flex items-center justify-between">
+            <span>✅ SẼ TỰ ĐỘNG TRẢ LỜI (Sau độ trễ ${data.delay_range})</span>
+            <span class="px-2 py-0.5 bg-emerald-200/70 rounded text-[11px]">Tag @: ${r.is_tagged ? 'Có' : 'Không'}</span>
+          </div>
+          <div><strong>Kịch bản khớp:</strong> ${escapeHtml(r.matched_rule.name)}</div>
+          <div><strong>Từ khóa khớp:</strong> <code class="bg-white px-1.5 py-0.5 rounded">${escapeHtml(r.matched_keyword || '')}</code></div>
+          <div class="p-3 rounded-lg bg-white border border-emerald-200 text-slate-800 font-medium">
+            💬 "${escapeHtml(r.reply_text)}"
+          </div>
+        `;
+      } else {
+        box.className = 'p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs space-y-1.5';
+        box.innerHTML = `
+          <div class="font-bold text-amber-800">⏸ KHÔNG TRẢ LỜI TIN NHẮN NÀY</div>
+          <div><strong>Lý do:</strong> ${escapeHtml(r.reason)}</div>
+          <div class="text-slate-600">Loại hội thoại: <strong>${r.effective_chat_type}</strong> | Nhận diện có Tag @: <strong>${r.is_tagged ? 'Có' : 'Không'}</strong></div>
+        `;
+      }
+    }
+
+    async function clearLogs() {
+      await fetch('/api/logs/clear', { method: 'POST' });
+      await fetchState();
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function updateThemeButtonUI() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('themeIcon');
+      const txt = document.getElementById('themeText');
+      if (icon && txt) {
+        icon.textContent = isDark ? '☀️' : '🌙';
+        txt.textContent = isDark ? 'Giao diện Sáng' : 'Giao diện Tối';
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('zalo_theme', isDark ? 'dark' : 'light');
+      updateThemeButtonUI();
+    }
+
+    updateThemeButtonUI();
+    fetchState();
+    setInterval(fetchState, 2500);
+  </script>
+</body>
+</html>

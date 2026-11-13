@@ -1,0 +1,18 @@
+{
+  "name": "Zalo Auto-Reply Studio",
+  "short_name": "ZaloBot",
+  "description": "Ứng dụng quản lý trả lời tự động Zalo theo kịch bản cho từng người và từng nhóm",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0068ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
