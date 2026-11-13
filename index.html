@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Zalo Auto Assistant — Mobile Web App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0b1120;
+      color: #f1f5f9;
+      padding-bottom: calc(76px + env(safe-area-inset-bottom));
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .safe-top {
+      padding-top: max(12px, env(safe-area-inset-top));
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-blue-500/30">
+
+  <!-- Top App Bar -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 safe-top">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/25">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-bold text-white truncate">Zalo Auto Assistant</h1>
+          <p id="header-status-text" class="text-xs text-emerald-400 font-medium truncate">● Tự động trả lời: Đang bật</p>
+        </div>
+      </div>
+
+      <button id="toggle-auto-btn" type="button" class="min-h-[38px] px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 active:scale-95 transition shrink-0">
+        Đang bật Auto
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-3xl mx-auto px-3 sm:px-4 pt-4">
+
+    <!-- ==================== TAB 1: INBOX ==================== -->
+    <section id="view-inbox" class="space-y-4">
+      <!-- Quick Message Input Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Nhận / Dán tin nhắn Zalo</span>
+          <button id="btn-load-samples" type="button" class="text-xs font-medium text-blue-400 hover:text-blue-300 py-1 px-2 rounded-lg bg-blue-500/10">
+            + Nạp 4 tin mẫu
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <input id="input-sender" type="text" placeholder="Tên người gửi (vd: Anh Minh)"
+            class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500" />
+          <div class="sm:col-span-2 flex gap-2">
+            <input id="input-message" type="text" placeholder="Dán hoặc nhập nội dung tin nhắn..."
+              class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500" />
+            <button id="btn-send-msg" type="button"
+              class="min-h-[44px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-sm font-semibold shrink-0 transition">
+              Xử lý
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Pills & Stats -->
+      <div class="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+        <div class="flex items-center gap-1.5">
+          <button data-filter="all" class="filter-pill min-h-[36px] px-3 rounded-full text-xs font-semibold bg-blue-600 text-white">Tất cả (<span id="count-all">0</span>)</button>
+          <button data-filter="replied" class="filter-pill min-h-[36px] px-3 rounded-full text-xs font-semibold bg-slate-800 text-slate-300">Đã trả lời (<span id="count-replied">0</span>)</button>
+          <button data-filter="pending" class="filter-pill min-h-[36px] px-3 rounded-full text-xs font-semibold bg-slate-800 text-slate-300">Chờ xử lý (<span id="count-pending">0</span>)</button>
+        </div>
+        <button id="btn-clear-inbox" type="button" class="min-h-[36px] px-3 rounded-full text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 shrink-0">
+          Xóa hết
+        </button>
+      </div>
+
+      <!-- Message List -->
+      <div id="inbox-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ==================== TAB 2: AI SUMMARY ==================== -->
+    <section id="view-summary" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-white">Tổng kết nội dung tin nhắn</h2>
+            <p class="text-xs text-slate-400">Phân tích bằng Gemini AI hoặc chế độ cục bộ nếu chưa có API Key</p>
+          </div>
+          <select id="summary-period" class="min-h-[44px] px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500">
+            <option value="2">2 giờ qua</option>
+            <option value="24" selected>24 giờ qua</option>
+            <option value="168">7 ngày qua</option>
+            <option value="all">Tất cả tin nhắn</option>
+          </select>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button id="btn-run-summary" type="button"
+            class="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-sm font-semibold transition">
+            Tổng kết nội dung ngay
+          </button>
+          <button id="btn-copy-summary" type="button"
+            class="min-h-[44px] px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold border border-slate-700">
+            Sao chép
+          </button>
+          <button id="btn-export-summary" type="button"
+            class="min-h-[44px] px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold border border-slate-700">
+            Tải .md
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <pre id="summary-output" class="whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-200 min-h-[240px]">Nhấn "Tổng kết nội dung ngay" để hệ thống phân tích các tin nhắn Zalo đã nhận.</pre>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: SCENARIOS ==================== -->
+    <section id="view-scenarios" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Kịch bản trả lời tự động</h2>
+          <p class="text-xs text-slate-400">Hỗ trợ biến <code class="text-blue-300">{sender}</code>, <code class="text-blue-300">{time}</code>, <code class="text-blue-300">{date}</code></p>
+        </div>
+        <button id="btn-new-scenario" type="button"
+          class="min-h-[42px] px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-sm font-semibold">
+          + Thêm kịch bản
+        </button>
+      </div>
+
+      <div id="scenarios-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ==================== TAB 4: SETTINGS ==================== -->
+    <section id="view-settings" class="hidden space-y-4">
+      <!-- AI Settings -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <h2 class="text-base font-bold text-white">1. Cấu hình Gemini AI</h2>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Gemini API Key (lưu an toàn trên thiết bị)</label>
+          <input id="cfg-api-key" type="password" placeholder="AIza..."
+            class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Model AI</label>
+            <select id="cfg-model" class="w-full min-h-[44px] px-3 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white">
+              <option value="gemini-2.5-flash">gemini-2.5-flash (Nhanh)</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro (Chuyên sâu)</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between bg-slate-800/60 border border-slate-700/70 rounded-xl px-3.5 py-2.5">
+            <span class="text-xs font-medium text-slate-200 pr-2">Dùng AI trả lời nếu không khớp kịch bản</span>
+            <input id="cfg-ai-fallback" type="checkbox" class="w-5 h-5 accent-blue-600 rounded" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Backend / Zalo OA Bridge -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <h2 class="text-base font-bold text-white">2. Kết nối Zalo OA / Server cá nhân (Tùy chọn)</h2>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Trên iPhone &amp; Android, trình duyệt không thể tự đọc trực tiếp app Zalo cá nhân do giới hạn bảo mật hệ điều hành. Bạn có thể dán tin nhắn trực tiếp ở Tab Hộp thư hoặc kết nối tới Server Python / Zalo OA Webhook của bạn.
+        </p>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">URL Webhook / API Server (nếu có)</label>
+          <input id="cfg-backend-url" type="url" placeholder="https://your-server.ngrok-free.app"
+            class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <button id="btn-save-settings" type="button"
+          class="w-full min-h-[44px] rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-sm font-semibold">
+          Lưu cấu hình
+        </button>
+      </div>
+
+      <!-- Mobile Install Guide -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+        <h2 class="text-base font-bold text-white">3. Cài đặt lên màn hình chính điện thoại</h2>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          • <strong>iPhone (Safari):</strong> Nhấn nút <strong>Chia sẻ (Share)</strong> ở thanh dưới &rarr; chọn <strong>Thêm vào MH chính (Add to Home Screen)</strong>.<br />
+          • <strong>Android (Chrome):</strong> Nhấn biểu tượng <strong>3 chấm (&vellip;)</strong> góc trên phải &rarr; chọn <strong>Thêm vào màn hình chính / Cài đặt ứng dụng</strong>.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation Bar (Mobile-First) -->
+  <nav class="bottom-nav fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800">
+    <div class="max-w-3xl mx-auto grid grid-cols-4">
+      <button data-tab="inbox" class="nav-btn flex flex-col items-center justify-center py-2.5 text-blue-400">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <span class="text-[11px] font-semibold">Hộp thư</span>
+      </button>
+
+      <button data-tab="summary" class="nav-btn flex flex-col items-center justify-center py-2.5 text-slate-400">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span class="text-[11px] font-semibold">Tổng kết</span>
+      </button>
+
+      <button data-tab="scenarios" class="nav-btn flex flex-col items-center justify-center py-2.5 text-slate-400">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        <span class="text-[11px] font-semibold">Kịch bản</span>
+      </button>
+
+      <button data-tab="settings" class="nav-btn flex flex-col items-center justify-center py-2.5 text-slate-400">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="text-[11px] font-semibold">Cài đặt</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Scenario Edit Modal -->
+  <div id="scenario-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="w-full sm:max-w-lg bg-slate-900 border border-slate-700 rounded-t-3xl sm:rounded-2xl p-5 space-y-3.5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 id="modal-sc-title" class="text-base font-bold text-white">Thêm kịch bản mới</h3>
+        <button id="btn-close-sc-modal" type="button" class="text-slate-400 hover:text-white p-1.5">✕</button>
+      </div>
+
+      <input id="sc-id" type="hidden" />
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Tên kịch bản</label>
+        <input id="sc-name" type="text" placeholder="Vd: Hỏi báo giá"
+          class="w-full min-h-[44px] px-3.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Kiểu khớp</label>
+          <select id="sc-match-type" class="w-full min-h-[44px] px-3 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white">
+            <option value="contains_any">Chứa bất kỳ từ khóa</option>
+            <option value="contains_all">Chứa tất cả từ khóa</option>
+            <option value="exact">Khớp chính xác</option>
+            <option value="regex">Regex</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Độ ưu tiên</label>
+          <input id="sc-priority" type="number" value="10"
+            class="w-full min-h-[44px] px-3.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Từ khóa (phân tách bằng dấu phẩy)</label>
+        <input id="sc-keywords" type="text" placeholder="giá, bao nhiêu, báo giá"
+          class="w-full min-h-[44px] px-3.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white" />
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Nội dung trả lời tự động</label>
+        <textarea id="sc-reply" rows="3" placeholder="Chào {sender}, ..."
+          class="w-full p-3.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white"></textarea>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <label class="flex items-center gap-2 text-sm text-slate-200">
+          <input id="sc-active" type="checkbox" checked class="w-4 h-4 accent-blue-600" />
+          Kích hoạt kịch bản
+        </label>
+        <div class="flex gap-2">
+          <button id="btn-save-sc" type="button" class="min-h-[42px] px-5 rounded-xl bg-blue-600 text-white text-sm font-semibold">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Clear Modal -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
+      <h3 class="text-base font-bold text-white">Xác nhận xóa hộp thư</h3>
+      <p class="text-sm text-slate-300">Bạn có chắc muốn xóa toàn bộ tin nhắn đã lưu trên thiết bị này không?</p>
+      <div class="flex justify-end gap-2">
+        <button id="btn-cancel-clear" type="button" class="min-h-[40px] px-4 rounded-xl bg-slate-800 text-slate-200 text-sm font-semibold">Hủy</button>
+        <button id="btn-confirm-clear" type="button" class="min-h-[40px] px-4 rounded-xl bg-rose-600 text-white text-sm font-semibold">Xóa hết</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-xs sm:text-sm font-medium text-white shadow-xl"></div>
+
+  <script>
+    (function () {
+      const STORAGE_KEYS = {
+        MESSAGES: 'zalo_mob_messages_v1',
+        SCENARIOS: 'zalo_mob_scenarios_v1',
+        CONFIG: 'zalo_mob_config_v1',
+      };
+
+      const DEFAULT_SCENARIOS = [
+        {
+          id: 'sc-1',
+          name: 'Chào hỏi ban đầu',
+          matchType: 'contains_any',
+          keywords: 'xin chào, chào bạn, chào shop, alo, hello, hi, ad ơi',
+          reply: 'Chào {sender}! Hiện tại mình đang bận một chút, bạn cần hỗ trợ thông tin gì cứ để lại lời nhắn nhé.',
+          priority: 10,
+          active: true,
+        },
+        {
+          id: 'sc-2',
+          name: 'Hỏi giá / Báo giá',
+          matchType: 'contains_any',
+          keywords: 'giá, bao nhiêu, báo giá, chi phí, bảng giá',
+          reply: 'Chào {sender}, cảm ơn bạn đã quan tâm! Bạn vui lòng cho mình biết sản phẩm/dịch vụ cụ thể để mình gửi báo giá chi tiết nhé.',
+          priority: 20,
+          active: true,
+        },
+        {
+          id: 'sc-3',
+          name: 'Giờ làm việc & Địa chỉ',
+          matchType: 'contains_any',
+          keywords: 'giờ làm, mở cửa, mấy giờ, địa chỉ, ở đâu',
+          reply: 'Bên mình làm việc từ 08:00 - 17:30 (Thứ 2 đến Thứ 7). Bạn cần ghé trực tiếp hay hẹn lịch trước ạ?',
+          priority: 15,
+          active: true,
+        },
+        {
+          id: 'sc-4',
+          name: 'Hỗ trợ kỹ thuật / Gấp',
+          matchType: 'contains_any',
+          keywords: 'lỗi, hỏng, gấp, khẩn cấp, không vào được, bảo hành',
+          reply: 'Mình đã ghi nhận yêu cầu hỗ trợ từ {sender}. Vui lòng chụp ảnh/mô tả lỗi gửi giúp mình, kỹ thuật sẽ phản hồi ngay.',
+          priority: 30,
+          active: true,
+        },
+        {
+          id: 'sc-5',
+          name: 'Cảm ơn / Kết thúc',
+          matchType: 'contains_any',
+          keywords: 'cảm ơn, cám ơn, ok cảm ơn, thanks, thank you',
+          reply: 'Dạ không có chi ạ! Nếu cần thêm thông tin gì {sender} cứ nhắn lại cho mình nhé.',
+          priority: 5,
+          active: true,
+        },
+      ];
+
+      const DEFAULT_CONFIG = {
+        apiKey: '',
+        model: 'gemini-2.5-flash',
+        aiFallback: false,
+        autoReplyEnabled: true,
+        backendUrl: '',
+      };
+
+      function safeRead(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+
+      function safeWrite(key, val) {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch (e) {}
+      }
+
+      let state = {
+        messages: safeRead(STORAGE_KEYS.MESSAGES, []),
+        scenarios: safeRead(STORAGE_KEYS.SCENARIOS, DEFAULT_SCENARIOS),
+        config: Object.assign({}, DEFAULT_CONFIG, safeRead(STORAGE_KEYS.CONFIG, {})),
+        activeTab: 'inbox',
+        filter: 'all',
+      };
+
+      let toastTimer = null;
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
+      }
+
+      function formatNow() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => showToast('Đã sao chép nội dung')).catch(() => fallbackCopy(text));
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('Đã sao chép nội dung');
+        } catch (e) {
+          showToast('Không thể sao chép tự động');
+        }
+        document.body.removeChild(ta);
+      }
+
+      function normalize(s) {
+        return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      }
+
+      function matchScenario(sender, content) {
+        const norm = normalize(content);
+        const activeList = state.scenarios
+          .filter((s) => s.active)
+          .sort((a, b) => Number(b.priority || 0) - Number(a.priority || 0));
+
+        for (const sc of activeList) {
+          let hit = false;
+          if (sc.matchType === 'exact') {
+            hit = norm === normalize(sc.keywords);
+          } else if (sc.matchType === 'contains_any') {
+            const kws = sc.keywords.split(',').map(normalize).filter(Boolean);
+            hit = kws.some((k) => norm.includes(k));
+          } else if (sc.matchType === 'contains_all') {
+            const kws = sc.keywords.split(',').map(normalize).filter(Boolean);
+            hit = kws.length > 0 && kws.every((k) => norm.includes(k));
+          } else if (sc.matchType === 'regex') {
+            try {
+              hit = new RegExp(sc.keywords, 'i').test(content);
+            } catch (e) {
+              hit = false;
+            }
+          }
+          if (hit) {
+            const d = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const reply = sc.reply
+              .replace(/\{sender\}/g, sender)
+              .replace(/\{time\}/g, `${pad(d.getHours())}:${pad(d.getMinutes())}`)
+              .replace(/\{date\}/g, `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`);
+            return { scenarioName: sc.name, reply };
+          }
+        }
+        return null;
+      }
+
+      async function callGemini(promptText) {
+        const key = (state.config.apiKey || '').trim();
+        if (!key) return null;
+        const model = state.config.model || 'gemini-2.5-flash';
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+      }
+
+      async function processIncoming(sender, content) {
+        const cleanSender = sender.trim() || 'Khách Zalo';
+        const cleanContent = content.trim();
+        if (!cleanContent) return;
+
+        const msg = {
+          id: 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+          sender: cleanSender,
+          content: cleanContent,
+          receivedAt: formatNow(),
+          ts: Date.now(),
+          matchedScenario: '',
+          autoReply: '',
+          status: 'pending',
+        };
+
+        if (state.config.autoReplyEnabled) {
+          const matched = matchScenario(cleanSender, cleanContent);
+          if (matched) {
+            msg.matchedScenario = matched.scenarioName;
+            msg.autoReply = matched.reply;
+            msg.status = 'replied';
+          } else if (state.config.aiFallback && state.config.apiKey) {
+            try {
+              const aiText = await callGemini(
+                `Bạn là trợ lý CSKH lịch sự. Hãy viết 1 câu trả lời ngắn (1-2 câu) bằng tiếng Việt cho tin nhắn Zalo sau.\nNgười gửi: ${cleanSender}\nNội dung: ${cleanContent}`
+              );
+              if (aiText) {
+                msg.matchedScenario = 'Gemini AI';
+                msg.autoReply = aiText;
+                msg.status = 'replied';
+              }
+            } catch (e) {
+              showToast('Không gọi được Gemini AI, lưu ở trạng thái chờ');
+            }
+          }
+        }
+
+        state.messages.unshift(msg);
+        safeWrite(STORAGE_KEYS.MESSAGES, state.messages);
+        renderInbox();
+      }
+
+      function renderHeaderStatus() {
+        const btn = document.getElementById('toggle-auto-btn');
+        const txt = document.getElementById('header-status-text');
+        if (state.config.autoReplyEnabled) {
+          btn.textContent = 'Đang bật Auto';
+          btn.className = 'min-h-[38px] px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 active:scale-95 transition shrink-0';
+          txt.textContent = '● Tự động trả lời: Đang bật';
+          txt.className = 'text-xs text-emerald-400 font-medium truncate';
+        } else {
+          btn.textContent = 'Đang tạm dừng';
+          btn.className = 'min-h-[38px] px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 active:scale-95 transition shrink-0';
+          txt.textContent = '● Tự động trả lời: Đã tạm dừng';
+          txt.className = 'text-xs text-amber-400 font-medium truncate';
+        }
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function renderInbox() {
+        const all = state.messages;
+        const replied = all.filter((m) => m.status === 'replied');
+        const pending = all.filter((m) => m.status !== 'replied');
+
+        document.getElementById('count-all').textContent = all.length;
+        document.getElementById('count-replied').textContent = replied.length;
+        document.getElementById('count-pending').textContent = pending.length;
+
+        document.querySelectorAll('.filter-pill').forEach((btn) => {
+          const active = btn.dataset.filter === state.filter;
+          btn.className = active
+            ? 'filter-pill min-h-[36px] px-3 rounded-full text-xs font-semibold bg-blue-600 text-white'
+            : 'filter-pill min-h-[36px] px-3 rounded-full text-xs font-semibold bg-slate-800 text-slate-300';
+        });
+
+        const listEl = document.getElementById('inbox-list');
+        const visible = state.filter === 'all' ? all : state.filter === 'replied' ? replied : pending;
+
+        if (!visible.length) {
+          listEl.innerHTML = `
+            <div class="bg-slate-900/60 border border-dashed border-slate-800 rounded-2xl p-8 text-center text-sm text-slate-400">
+              Chưa có tin nhắn nào. Hãy nhập tin nhắn ở trên hoặc nhấn <strong>+ Nạp 4 tin mẫu</strong> để thử ngay.
+            </div>`;
+          return;
+        }
+
+        listEl.innerHTML = visible.map((m) => {
+          const isReplied = m.status === 'replied';
+          const badge = isReplied
+            ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300">✓ Đã trả lời</span>'
+            : '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300">○ Chờ xử lý</span>';
+
+          const replyBlock = m.autoReply
+            ? `<div class="mt-2.5 p-3 rounded-xl bg-slate-800/80 border border-slate-700/70 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[11px] font-semibold text-blue-300">↳ Kịch bản: ${escapeHtml(m.matchedScenario)}</span>
+                  <button type="button" data-copy-id="${escapeHtml(m.id)}" class="btn-copy-reply text-[11px] font-semibold text-slate-200 bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-lg">
+                    Sao chép câu trả lời
+                  </button>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">${escapeHtml(m.autoReply)}</p>
+              </div>`
+            : '';
+
+          return `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 sm:p-4">
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <div class="font-semibold text-sm text-blue-300 truncate">${escapeHtml(m.sender)} <span class="text-xs font-normal text-slate-500 ml-1">${escapeHtml(m.receivedAt.slice(11, 16))}</span></div>
+                ${badge}
+              </div>
+              <p class="text-sm text-slate-100 leading-relaxed">${escapeHtml(m.content)}</p>
+              ${replyBlock}
+            </div>`;
+        }).join('');
+      }
+
+      function renderScenarios() {
+        const listEl = document.getElementById('scenarios-list');
+        const sorted = [...state.scenarios].sort((a, b) => Number(b.priority || 0) - Number(a.priority || 0));
+        listEl.innerHTML = sorted.map((sc) => `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0 ${sc.active ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+                <h3 class="text-sm font-bold text-white truncate">${escapeHtml(sc.name)}</h3>
+                <span class="text-[11px] text-slate-400 shrink-0">(Ưu tiên ${sc.priority})</span>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" data-toggle-sc="${escapeHtml(sc.id)}" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold ${sc.active ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-400'}">
+                  ${sc.active ? 'Bật' : 'Tắt'}
+                </button>
+                <button type="button" data-edit-sc="${escapeHtml(sc.id)}" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-blue-300">Sửa</button>
+                <button type="button" data-del-sc="${escapeHtml(sc.id)}" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/15 text-rose-300">Xóa</button>
+              </div>
+            </div>
+            <p class="text-xs text-blue-300"><span class="text-slate-400">Từ khóa (${escapeHtml(sc.matchType)}):</span> ${escapeHtml(sc.keywords)}</p>
+            <p class="text-xs sm:text-sm text-slate-300 bg-slate-800/60 p-2.5 rounded-xl">${escapeHtml(sc.reply)}</p>
+          </div>
+        `).join('');
+      }
+
+      async function runSummary() {
+        const periodVal = document.getElementById('summary-period').value;
+        const outEl = document.getElementById('summary-output');
+        let targetMsgs = state.messages;
+        let label = 'Tất cả tin nhắn';
+
+        if (periodVal !== 'all') {
+          const hours = Number(periodVal);
+          const cutoff = Date.now() - hours * 3600 * 1000;
+          targetMsgs = state.messages.filter((m) => m.ts >= cutoff);
+          label = hours === 2 ? '2 giờ qua' : hours === 24 ? '24 giờ qua' : '7 ngày qua';
+        }
+
+        if (!targetMsgs.length) {
+          outEl.textContent = `Không có tin nhắn nào trong phạm vi "${label}".`;
+          return;
+        }
+
+        outEl.textContent = 'Đang tổng kết nội dung, vui lòng chờ...';
+
+        if (state.config.apiKey) {
+          try {
+            const transcript = [...targetMsgs]
+              .reverse()
+              .slice(0, 120)
+              .map((m) => `[${m.receivedAt}] ${m.sender}: ${m.content} (Trạng thái: ${m.status})`)
+              .join('\n');
+            const prompt = `Bạn là thư ký tổng kết tin nhắn Zalo. Hãy tóm tắt danh sách tin nhắn sau (${label}, tổng ${targetMsgs.length} tin) bằng tiếng Việt rõ ràng:\n1. Tổng quan ý chính (2-3 câu)\n2. Yêu cầu chính theo từng người gửi\n3. Việc cần làm & tin chưa trả lời\n\nTIN NHẮN:\n${transcript}`;
+            const aiResult = await callGemini(prompt);
+            if (aiResult) {
+              outEl.textContent = aiResult;
+              return;
+            }
+          } catch (e) {
+            // Fallback cục bộ bên dưới
+          }
+        }
+
+        const bySender = {};
+        let repliedCount = 0;
+        let pendingCount = 0;
+        for (const m of targetMsgs) {
+          if (!bySender[m.sender]) bySender[m.sender] = [];
+          bySender[m.sender].push(m);
+          if (m.status === 'replied') repliedCount++;
+          else pendingCount++;
+        }
+
+        const lines = [
+          `BÁO CÁO TỔNG KẾT TIN NHẮN (${label})`,
+          `• Tổng tin nhắn: ${targetMsgs.length}`,
+          `• Số người gửi: ${Object.keys(bySender).length}`,
+          `• Đã trả lời tự động: ${repliedCount} | Chờ xử lý: ${pendingCount}`,
+          '',
+          'CHI TIẾT THEO NGƯỜI GỬI:',
+        ];
+        for (const [sender, list] of Object.entries(bySender)) {
+          lines.push(`\n▸ ${sender} (${list.length} tin):`);
+          for (const item of list.slice(0, 5)) {
+            lines.push(`   ${item.status === 'replied' ? '✓' : '○'} [${item.receivedAt.slice(11, 16)}] ${item.content}`);
+          }
+        }
+        outEl.textContent = lines.join('\n');
+      }
+
+      function switchTab(tabName) {
+        state.activeTab = tabName;
+        ['inbox', 'summary', 'scenarios', 'settings'].forEach((t) => {
+          document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
+        });
+        document.querySelectorAll('.nav-btn').forEach((btn) => {
+          const isAct = btn.dataset.tab === tabName;
+          btn.classList.toggle('text-blue-400', isAct);
+          btn.classList.toggle('text-slate-400', !isAct);
+        });
+      }
+
+      function openScenarioModal(sc = null) {
+        document.getElementById('modal-sc-title').textContent = sc ? 'Chỉnh sửa kịch bản' : 'Thêm kịch bản mới';
+        document.getElementById('sc-id').value = sc ? sc.id : '';
+        document.getElementById('sc-name').value = sc ? sc.name : '';
+        document.getElementById('sc-match-type').value = sc ? sc.matchType : 'contains_any';
+        document.getElementById('sc-priority').value = sc ? sc.priority : 10;
+        document.getElementById('sc-keywords').value = sc ? sc.keywords : '';
+        document.getElementById('sc-reply').value = sc ? sc.reply : '';
+        document.getElementById('sc-active').checked = sc ? Boolean(sc.active) : true;
+        document.getElementById('scenario-modal').classList.remove('hidden');
+      }
+
+      function loadSettingsUI() {
+        document.getElementById('cfg-api-key').value = state.config.apiKey || '';
+        document.getElementById('cfg-model').value = state.config.model || 'gemini-2.5-flash';
+        document.getElementById('cfg-ai-fallback').checked = Boolean(state.config.aiFallback);
+        document.getElementById('cfg-backend-url').value = state.config.backendUrl || '';
+      }
+
+      // Event Bindings
+      document.querySelectorAll('.nav-btn').forEach((btn) => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.getElementById('toggle-auto-btn').addEventListener('click', () => {
+        state.config.autoReplyEnabled = !state.config.autoReplyEnabled;
+        safeWrite(STORAGE_KEYS.CONFIG, state.config);
+        renderHeaderStatus();
+      });
+
+      document.getElementById('btn-send-msg').addEventListener('click', () => {
+        const sender = document.getElementById('input-sender').value;
+        const msgEl = document.getElementById('input-message');
+        const content = msgEl.value;
+        if (!content.trim()) {
+          showToast('Vui lòng nhập nội dung tin nhắn');
+          return;
+        }
+        msgEl.value = '';
+        processIncoming(sender, content);
+      });
+
+      document.getElementById('input-message').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('btn-send-msg').click();
+      });
+
+      document.getElementById('btn-load-samples').addEventListener('click', async () => {
+        const samples = [
+          ['Anh Tuấn', 'Chào shop, bên mình còn nhận tư vấn thiết kế không?'],
+          ['Chị Lan', 'Cho mình xin báo giá gói dịch vụ tháng này nhé.'],
+          ['Minh Khoa', 'Văn phòng làm việc đến mấy giờ và địa chỉ ở đâu vậy?'],
+          ['Hùng IT', 'Hệ thống đang báo lỗi không vào được, hỗ trợ gấp giúp mình!'],
+        ];
+        for (const [s, c] of samples) {
+          await processIncoming(s, c);
+        }
+        showToast('Đã nạp 4 tin nhắn mẫu');
+      });
+
+      document.querySelectorAll('.filter-pill').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.filter = btn.dataset.filter;
+          renderInbox();
+        });
+      });
+
+      document.getElementById('inbox-list').addEventListener('click', (e) => {
+        const copyBtn = e.target.closest('.btn-copy-reply');
+        if (copyBtn) {
+          const msg = state.messages.find((m) => m.id === copyBtn.dataset.copyId);
+          if (msg && msg.autoReply) copyText(msg.autoReply);
+        }
+      });
+
+      document.getElementById('btn-clear-inbox').addEventListener('click', () => {
+        document.getElementById('confirm-modal').classList.remove('hidden');
+      });
+      document.getElementById('btn-cancel-clear').addEventListener('click', () => {
+        document.getElementById('confirm-modal').classList.add('hidden');
+      });
+      document.getElementById('btn-confirm-clear').addEventListener('click', () => {
+        state.messages = [];
+        safeWrite(STORAGE_KEYS.MESSAGES, []);
+        document.getElementById('confirm-modal').classList.add('hidden');
+        renderInbox();
+        showToast('Đã xóa toàn bộ hộp thư');
+      });
+
+      document.getElementById('btn-run-summary').addEventListener('click', runSummary);
+      document.getElementById('btn-copy-summary').addEventListener('click', () => {
+        copyText(document.getElementById('summary-output').textContent);
+      });
+      document.getElementById('btn-export-summary').addEventListener('click', () => {
+        const text = document.getElementById('summary-output').textContent;
+        const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'tong_ket_zalo.md';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      document.getElementById('btn-new-scenario').addEventListener('click', () => openScenarioModal(null));
+      document.getElementById('btn-close-sc-modal').addEventListener('click', () => {
+        document.getElementById('scenario-modal').classList.add('hidden');
+      });
+
+      document.getElementById('btn-save-sc').addEventListener('click', () => {
+        const id = document.getElementById('sc-id').value;
+        const name = document.getElementById('sc-name').value.trim();
+        const matchType = document.getElementById('sc-match-type').value;
+        const priority = Number(document.getElementById('sc-priority').value || 10);
+        const keywords = document.getElementById('sc-keywords').value.trim();
+        const reply = document.getElementById('sc-reply').value.trim();
+        const active = document.getElementById('sc-active').checked;
+
+        if (!name || !keywords || !reply) {
+          showToast('Vui lòng nhập đủ tên, từ khóa và câu trả lời');
+          return;
+        }
+        if (id) {
+          const idx = state.scenarios.findIndex((s) => s.id === id);
+          if (idx >= 0) state.scenarios[idx] = { id, name, matchType, priority, keywords, reply, active };
+        } else {
+          state.scenarios.push({
+            id: 'sc-' + Date.now(),
+            name,
+            matchType,
+            priority,
+            keywords,
+            reply,
+            active,
+          });
+        }
+        safeWrite(STORAGE_KEYS.SCENARIOS, state.scenarios);
+        document.getElementById('scenario-modal').classList.add('hidden');
+        renderScenarios();
+        showToast('Đã lưu kịch bản');
+      });
+
+      document.getElementById('scenarios-list').addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('[data-toggle-sc]');
+        if (toggleBtn) {
+          const sc = state.scenarios.find((s) => s.id === toggleBtn.dataset.toggleSc);
+          if (sc) {
+            sc.active = !sc.active;
+            safeWrite(STORAGE_KEYS.SCENARIOS, state.scenarios);
+            renderScenarios();
+          }
+          return;
+        }
+        const editBtn = e.target.closest('[data-edit-sc]');
+        if (editBtn) {
+          const sc = state.scenarios.find((s) => s.id === editBtn.dataset.editSc);
+          if (sc) openScenarioModal(sc);
+          return;
+        }
+        const delBtn = e.target.closest('[data-del-sc]');
+        if (delBtn) {
+          state.scenarios = state.scenarios.filter((s) => s.id !== delBtn.dataset.delSc);
+          safeWrite(STORAGE_KEYS.SCENARIOS, state.scenarios);
+          renderScenarios();
+          showToast('Đã xóa kịch bản');
+        }
+      });
+
+      document.getElementById('btn-save-settings').addEventListener('click', () => {
+        state.config.apiKey = document.getElementById('cfg-api-key').value.trim();
+        state.config.model = document.getElementById('cfg-model').value;
+        state.config.aiFallback = document.getElementById('cfg-ai-fallback').checked;
+        state.config.backendUrl = document.getElementById('cfg-backend-url').value.trim();
+        safeWrite(STORAGE_KEYS.CONFIG, state.config);
+        showToast('Đã lưu cấu hình thiết bị');
+      });
+
+      // Init
+      renderHeaderStatus();
+      renderInbox();
+      renderScenarios();
+      loadSettingsUI();
+      if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
+    })();
+  </script>
+</body>
+</html>
